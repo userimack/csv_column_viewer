@@ -14,8 +14,8 @@ def viewer(filename, columns, delimit):
             try:
                 columns_list = [int(x) for x in columns.split(" ")]  # list(map(int, columns.split(" ")))
                 for column in columns_list:
-                    print(line[column], end=',')
-                print("\n", end='')
+                    print(line[column])  # end=',')
+                #  print("\n", end='')
             except (BrokenPipeError, IOError):
                 pass
             except Exception as e:
@@ -37,7 +37,7 @@ if __name__ == "__main__":
             print("Error: File {0} doesn't  exists!!".format(options.input_file))
             sys.exit(1)
         else:
-            print("file: {}, Columns: {}, delimiter:{}".format(options.input_file, options.columns, options.delimiter))
+            print("\n>>>File: {}, Columns: {}, Delimiter: {}".format(options.input_file, options.columns, options.delimiter))
             viewer(options.input_file, options.columns, options.delimiter)
 
             sys.stderr.close()
