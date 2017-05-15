@@ -12,10 +12,9 @@ def viewer(filename, columns, delimit):
         csvreader = csv.reader(robj, delimiter=delimit)
         for line in csvreader:
             try:
-                columns_list = [int(x) for x in columns.split(" ")]  # list(map(int, columns.split(" ")))
-                for column in columns_list:
-                    print(line[column])  # end=',')
-                #  print("\n", end='')
+                for column in columns.split(","):
+                    print(line[int(column)], end=',')
+                print("\n", end='')
             except (BrokenPipeError, IOError):
                 pass
             except Exception as e:
@@ -30,14 +29,13 @@ if __name__ == "__main__":
     parser.add_option("-d", "--delimiter", help="CSV file delimiter", action="store", dest="delimiter")
     (options, args) = parser.parse_args(sys.argv)
     if options.input_file is None or options.columns is None:
-        parser.error("Incorrect number of argumens supplierd\nRun as \n$ python3 filename.py -f file.csv -c 1 2 3\nor\n$ pyhton3 filename.py --file file.csv --columns 1 2 3 \nNote: If you want you can give delimiter explicitly using the -d or --delimiter (default delimiter is  ',') ")
+        parser.error("Incorrect number of argumens supplierd\nRun as \n$ python3 filename.py -f file.csv -c 0,1,2,3\nor\n$ python3 filename.py --file file.csv --columns 0,1,2,3 \nNote: If you want you can give delimiter explicitly using the -d or --delimiter (default delimiter is  ',') ")
         sys.exit(1)
     else:
         if not os.path.isfile(options.input_file):
             print("Error: File {0} doesn't  exists!!".format(options.input_file))
             sys.exit(1)
         else:
-            print("\n>>>File: {}, Columns: {}, Delimiter: {}".format(options.input_file, options.columns, options.delimiter))
+            # print("\n>>>File: {}, Columns: {}, Delimiter: {}".format(options.input_file, options.columns, options.delimiter))
             viewer(options.input_file, options.columns, options.delimiter)
-
             sys.stderr.close()
