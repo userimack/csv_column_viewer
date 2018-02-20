@@ -3,30 +3,67 @@
 import csv
 import os
 import sys
-import traceback
+from functools import wraps
+from sys import exit, stderr, stdout
+#  from traceback import print_exc
+
 from optparse import OptionParser
 
+csv.field_size_limit(sys.maxsize)
 
-def viewer(filename, columns, delimit):
+
+def suppress_broken_pipe_msg(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except SystemExit:
+            raise
+        except:
+            pass
+            #  print_exc()
+            exit(1)
+        finally:
+            try:
+                stdout.flush()
+            finally:
+                try:
+                    stdout.close()
+                finally:
+                    try:
+                        stderr.flush()
+                    finally:
+                        stderr.close()
+    return wrapper
+
+
+@suppress_broken_pipe_msg
+def viewer(filename, columns, delimit, sep):
     with open(filename) as robj:
         csvreader = csv.reader(robj, delimiter=delimit)
         for line in csvreader:
             try:
                 for column in columns.split(","):
-                    print(line[int(column)], end=',')
+                    print(line[int(column)], end=sep)
                 print("\n", end='')
             except (BrokenPipeError, IOError):
                 pass
             except Exception as e:
-                print(traceback.format_exc())
+                pass  # print(traceback.format_exc())
+            except IOError as e:
+                pass
+            except KeyboardInterrupt:
+                pass
 
 
 if __name__ == "__main__":
     parser = OptionParser()
     parser.set_defaults(delimiter=',')
+    parser.set_defaults(sep='')
     parser.add_option("-f", "--file", help="Input CSV file", action="store", dest="input_file")
     parser.add_option("-c", "--columns", help="Column numbers to extract", action="store", dest="columns")
     parser.add_option("-d", "--delimiter", help="CSV file delimiter", action="store", dest="delimiter")
+    parser.add_option("-s", "--sep", help="Output delimiter", action="store", dest="sep")
     (options, args) = parser.parse_args(sys.argv)
     if options.input_file is None or options.columns is None:
         parser.error("Incorrect number of argumens supplierd\nRun as \n$ python3 filename.py -f file.csv -c 0,1,2,3\nor\n$ python3 filename.py --file file.csv --columns 0,1,2,3 \nNote: If you want you can give delimiter explicitly using the -d or --delimiter (default delimiter is  ',') ")
@@ -37,5 +74,5 @@ if __name__ == "__main__":
             sys.exit(1)
         else:
             # print("\n>>>File: {}, Columns: {}, Delimiter: {}".format(options.input_file, options.columns, options.delimiter))
-            viewer(options.input_file, options.columns, options.delimiter)
+            viewer(options.input_file, options.columns, options.delimiter, options.sep)
             sys.stderr.close()
